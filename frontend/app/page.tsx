@@ -117,7 +117,7 @@ export default function HomePage() {
 
           {/* Tagline */}
           <p className="mt-8 text-sm text-muted italic">
-            "Every Medicine. Verified. Always."
+            &ldquo;Every Medicine. Verified. Always.&rdquo;
           </p>
         </div>
       </section>
