@@ -79,5 +79,16 @@ export const STATUS_ICONS: Record<BatchStatus, string> = {
   [BatchStatus.Recalled]:     "⚠️",
 };
 
-export const SEPOLIA_CHAIN_ID = 11155111;
-export const SEPOLIA_CHAIN_HEX = "0xAA36A7";
+const configuredChainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID || 11155111);
+
+export const APP_CHAIN_ID = Number.isFinite(configuredChainId)
+  ? configuredChainId
+  : 11155111;
+export const APP_CHAIN_HEX = `0x${APP_CHAIN_ID.toString(16)}`;
+export const APP_NETWORK_NAME =
+  process.env.NEXT_PUBLIC_NETWORK ||
+  (APP_CHAIN_ID === 31337 ? "localhost" : "sepolia");
+export const APP_NETWORK_LABEL =
+  APP_CHAIN_ID === 31337 ? "Local Hardhat" : "Sepolia Testnet";
+export const APP_BLOCK_EXPLORER_URL =
+  APP_CHAIN_ID === 11155111 ? "https://sepolia.etherscan.io" : "";

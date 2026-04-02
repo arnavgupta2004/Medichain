@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { isContractDeployed } from "@/lib/contract";
+import { APP_CHAIN_ID, APP_NETWORK_LABEL } from "@/lib/types";
 
 interface RoleBannerProps {
   requiredRole: string; // e.g. "MANUFACTURER"
@@ -15,6 +17,42 @@ interface RoleBannerProps {
 export default function RoleBanner({ requiredRole }: RoleBannerProps) {
   const wallet   = useWallet();
   const deployed = isContractDeployed();
+  const [grantState, setGrantState] = useState<"idle" | "pending" | "error">("idle");
+  const [grantError, setGrantError] = useState<string | null>(null);
+
+  const canSelfGrant =
+    APP_CHAIN_ID === 31337 &&
+    wallet.connected &&
+    !!wallet.address &&
+    !wallet.roles.includes(requiredRole);
+
+  const handleSelfGrant = async () => {
+    if (!wallet.address) return;
+    setGrantState("pending");
+    setGrantError(null);
+
+    try {
+      const response = await fetch("/api/dev/grant-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: wallet.address,
+          role: requiredRole,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to grant demo role.");
+      }
+
+      await wallet.connect();
+      setGrantState("idle");
+    } catch (error) {
+      setGrantState("error");
+      setGrantError(error instanceof Error ? error.message : "Unable to grant demo role.");
+    }
+  };
 
   // Nothing to say when the user has the role
   if (wallet.connected && wallet.roles.includes(requiredRole)) return null;
@@ -65,7 +103,7 @@ export default function RoleBanner({ requiredRole }: RoleBannerProps) {
         <div className="flex-1">
           <p className="text-sm font-semibold text-warning">Wrong network</p>
           <p className="text-xs text-text-secondary mt-0.5">
-            Switch to <strong className="text-text-primary">Sepolia Testnet</strong> to use MediChain.
+            Switch to <strong className="text-text-primary">{APP_NETWORK_LABEL}</strong> to use MediChain.
           </p>
         </div>
         <button onClick={wallet.switchNetwork} className="btn-primary text-sm py-2 px-4 whitespace-nowrap">
@@ -77,9 +115,9 @@ export default function RoleBanner({ requiredRole }: RoleBannerProps) {
 
   // Connected but missing role
   return (
-    <div className="mb-6 flex gap-3 p-4 bg-danger/10 border border-danger/20 rounded-lg">
+    <div className="mb-6 flex gap-3 p-4 bg-danger/10 border border-danger/20 rounded-lg items-start">
       <span className="text-xl flex-shrink-0">🔒</span>
-      <div>
+      <div className="flex-1">
         <p className="text-sm font-semibold text-danger">
           {requiredRole}_ROLE required
         </p>
@@ -94,7 +132,24 @@ export default function RoleBanner({ requiredRole }: RoleBannerProps) {
           </a>
           . Any transaction you submit without the role will be rejected by the contract.
         </p>
+        {grantError && (
+          <p className="text-xs text-danger mt-2">{grantError}</p>
+        )}
+        {canSelfGrant && (
+          <p className="text-[11px] text-muted mt-2">
+            Localhost helper for demo wallets only.
+          </p>
+        )}
       </div>
+      {canSelfGrant && (
+        <button
+          onClick={handleSelfGrant}
+          disabled={grantState === "pending"}
+          className="btn-primary text-sm py-2 px-4 whitespace-nowrap self-start"
+        >
+          {grantState === "pending" ? "Granting..." : "Grant Demo Access"}
+        </button>
+      )}
     </div>
   );
 }

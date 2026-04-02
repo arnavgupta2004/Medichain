@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { APP_NETWORK_NAME } from "@/lib/types";
 
 interface QRGeneratorProps {
   batchId:         string;
@@ -26,7 +27,7 @@ export default function QRGenerator({
   const qrData = JSON.stringify({
     batchId,
     contract: contractAddress,
-    network: "sepolia",
+    network: APP_NETWORK_NAME,
     url: verifyUrl,
   });
 

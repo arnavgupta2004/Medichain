@@ -2,6 +2,7 @@
 
 import { useWallet } from "@/hooks/useWallet";
 import { isContractDeployed } from "@/lib/contract";
+import { APP_NETWORK_LABEL, APP_NETWORK_NAME } from "@/lib/types";
 import Link from "next/link";
 
 interface RoleGuardProps {
@@ -46,13 +47,13 @@ export default function RoleGuard({ requiredRole, children }: RoleGuardProps) {
             Wrong Network
           </h2>
           <p className="text-text-secondary mb-6 text-sm">
-            Please switch to the <strong className="text-warning">Sepolia</strong> testnet to use MediChain.
+            Please switch to <strong className="text-warning">{APP_NETWORK_LABEL}</strong> to use MediChain.
           </p>
           <button
             onClick={wallet.switchNetwork}
             className="btn-primary w-full"
           >
-            Switch to Sepolia
+            Switch Network
           </button>
         </div>
       </div>
@@ -72,7 +73,7 @@ export default function RoleGuard({ requiredRole, children }: RoleGuardProps) {
             This page requires <strong className="text-text-primary">{requiredRole}_ROLE</strong> on a deployed MediChain contract.
           </p>
           <div className="bg-background rounded-lg p-3 text-left text-xs font-mono text-text-secondary space-y-1 mb-5">
-            <p className="text-primary">npx hardhat run scripts/deploy.js --network sepolia</p>
+            <p className="text-primary">{`npx hardhat run scripts/deploy.js --network ${APP_NETWORK_NAME}`}</p>
             <p className="text-muted"># Then set env vars in frontend/.env.local</p>
           </div>
           <Link href="/" className="btn-secondary w-full block text-center">

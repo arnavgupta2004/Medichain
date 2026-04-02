@@ -6,7 +6,7 @@ import { getStats, grantRole, revokeRole, isContractDeployed } from "@/lib/contr
 import { getRoleManagerReadOnly } from "@/lib/contract";
 import { decodeContractError, etherscanLink } from "@/lib/web3";
 import { useWallet } from "@/hooks/useWallet";
-import type { TxStatus } from "@/lib/types";
+import { APP_BLOCK_EXPLORER_URL, APP_CHAIN_ID, APP_NETWORK_LABEL, APP_NETWORK_NAME, type TxStatus } from "@/lib/types";
 
 const ROLE_OPTIONS = [
   { label: "Manufacturer",  value: "MANUFACTURER_ROLE" },
@@ -88,6 +88,7 @@ export default function DashboardPage() {
 
   const isAddressValid = roleAddress.trim().startsWith("0x") && roleAddress.trim().length === 42;
   const contractAddr   = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
+  const contractUrl = contractAddr ? etherscanLink(contractAddr, "address") : "";
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -135,7 +136,7 @@ export default function DashboardPage() {
               </p>
               <div className="bg-background rounded-lg p-3 text-xs font-mono text-text-secondary space-y-1">
                 <div># Deploy contracts first:</div>
-                <div className="text-primary">npx hardhat run scripts/deploy.js --network sepolia</div>
+                <div className="text-primary">{`npx hardhat run scripts/deploy.js --network ${APP_NETWORK_NAME}`}</div>
                 <div className="mt-2"># Then start frontend:</div>
                 <div className="text-primary">cd frontend && npm run dev</div>
               </div>
@@ -166,21 +167,28 @@ export default function DashboardPage() {
           <div>
             <p className="text-xs text-muted mb-1">MediChainCore Address</p>
             {contractAddr && contractAddr !== "0x0000000000000000000000000000000000000000" ? (
-              <a
-                href={etherscanLink(contractAddr, "address")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary text-sm font-mono hover:underline break-all"
-              >
-                {contractAddr} ↗
-              </a>
+              contractUrl ? (
+                <a
+                  href={contractUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary text-sm font-mono hover:underline break-all"
+                >
+                  {contractAddr} ↗
+                </a>
+              ) : (
+                <span className="text-primary text-sm font-mono break-all">
+                  {contractAddr}
+                </span>
+              )
             ) : (
               <span className="text-muted text-sm">Not deployed</span>
             )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="badge-info">Sepolia Testnet</span>
-            <span className="badge-info">Chain ID: 11155111</span>
+            <span className="badge-info">{APP_NETWORK_LABEL}</span>
+            <span className="badge-info">Chain ID: {APP_CHAIN_ID}</span>
+            {!APP_BLOCK_EXPLORER_URL && <span className="badge-info">Local RPC</span>}
             {deployed && <span className="badge-success">Contracts Live</span>}
           </div>
         </div>

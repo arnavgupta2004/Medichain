@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useWallet } from "@/hooks/useWallet";
+import { APP_NETWORK_LABEL } from "@/lib/types";
 
 export default function WalletConnect() {
   const wallet = useWallet();
@@ -75,7 +76,7 @@ export default function WalletConnect() {
             <div>
               <p className="text-xs text-muted mb-0.5">Network</p>
               <p className={`text-sm font-medium ${wallet.isCorrectNetwork ? "text-success" : "text-warning"}`}>
-                {wallet.isCorrectNetwork ? "Sepolia Testnet ✓" : `Chain ${wallet.chainId} ⚠`}
+                {wallet.isCorrectNetwork ? `${APP_NETWORK_LABEL} ✓` : `Chain ${wallet.chainId} ⚠`}
               </p>
             </div>
             {!wallet.isCorrectNetwork && (

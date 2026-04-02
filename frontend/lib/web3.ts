@@ -1,5 +1,10 @@
 import { ethers } from "ethers";
-import { SEPOLIA_CHAIN_ID, SEPOLIA_CHAIN_HEX } from "./types";
+import {
+  APP_BLOCK_EXPLORER_URL,
+  APP_CHAIN_HEX,
+  APP_CHAIN_ID,
+  APP_NETWORK_LABEL,
+} from "./types";
 
 // ============================================================
 // Provider helpers
@@ -61,28 +66,30 @@ export async function getCurrentChainId(): Promise<number> {
   return parseInt(chainIdHex as string, 16);
 }
 
-export async function switchToSepolia(): Promise<void> {
+export async function switchToAppNetwork(): Promise<void> {
   if (typeof window === "undefined" || !window.ethereum) return;
   try {
     await window.ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: SEPOLIA_CHAIN_HEX }],
+      params: [{ chainId: APP_CHAIN_HEX }],
     });
   } catch (error: unknown) {
     // Chain not added — add it
     if ((error as { code: number }).code === 4902) {
+      const isLocal = APP_CHAIN_ID === 31337;
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
         params: [
           {
-            chainId: SEPOLIA_CHAIN_HEX,
-            chainName: "Sepolia Test Network",
-            nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
-            rpcUrls: [
-              process.env.NEXT_PUBLIC_ALCHEMY_URL ||
-                "https://eth-sepolia.g.alchemy.com/v2/demo",
-            ],
-            blockExplorerUrls: ["https://sepolia.etherscan.io"],
+            chainId: APP_CHAIN_HEX,
+            chainName: APP_NETWORK_LABEL,
+            nativeCurrency: {
+              name: "Ether",
+              symbol: "ETH",
+              decimals: 18,
+            },
+            rpcUrls: [process.env.NEXT_PUBLIC_ALCHEMY_URL || "http://127.0.0.1:8545"],
+            ...(isLocal ? {} : { blockExplorerUrls: [APP_BLOCK_EXPLORER_URL] }),
           },
         ],
       });
@@ -92,8 +99,8 @@ export async function switchToSepolia(): Promise<void> {
   }
 }
 
-export function isSepoliaChain(chainId: number | null): boolean {
-  return chainId === SEPOLIA_CHAIN_ID;
+export function isExpectedChain(chainId: number | null): boolean {
+  return chainId === APP_CHAIN_ID;
 }
 
 // ============================================================
@@ -130,7 +137,8 @@ export function isExpired(expiryTimestamp: bigint | number): boolean {
 }
 
 export function etherscanLink(hash: string, type: "tx" | "address" = "tx"): string {
-  const base = "https://sepolia.etherscan.io";
+  const base = APP_BLOCK_EXPLORER_URL;
+  if (!base) return "";
   return type === "tx" ? `${base}/tx/${hash}` : `${base}/address/${hash}`;
 }
 

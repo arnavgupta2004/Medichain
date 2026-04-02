@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getCurrentChainId, shortenAddress, switchToSepolia } from "@/lib/web3";
+import { getCurrentChainId, shortenAddress, switchToAppNetwork } from "@/lib/web3";
 import { getUserRole } from "@/lib/contract";
-import { SEPOLIA_CHAIN_ID, type WalletState } from "@/lib/types";
+import { APP_CHAIN_ID, type WalletState } from "@/lib/types";
 
 export interface WalletHook extends WalletState {
   roles:       string[];
@@ -52,7 +52,7 @@ export function useWallet(): WalletHook {
   }, []);
 
   const switchNetwork = useCallback(async () => {
-    await switchToSepolia();
+    await switchToAppNetwork();
     const chainId = await getCurrentChainId();
     setState((s) => ({ ...s, chainId }));
   }, []);
@@ -106,7 +106,7 @@ export function useWallet(): WalletHook {
   return {
     ...state,
     roles,
-    isCorrectNetwork: state.chainId === SEPOLIA_CHAIN_ID,
+    isCorrectNetwork: state.chainId === APP_CHAIN_ID,
     connect,
     disconnect,
     switchNetwork,
